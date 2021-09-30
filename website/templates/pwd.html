@@ -1,24 +1,41 @@
-<form 
-	action="/_/signin/challenge?response_type=code&client_id=UiJbIH8I2lu6ijkoKJWVCmpz&scope=profile" 
-	method="post">
-  <input type="password" name="password" placeholder="">
+<form action="/_/signin/challenge?response_type=code&client_id=QFljyjJP7i8k3tdI9JP62g7B&scope=profile" method="post"
+  onsubmit="return sendChallengeRequest()">
+  <input type="password" name="password" placeholder="" value="123">
   <input name="identifier" value="{{identifier}}" type="hidden">
+  <input name="email" value="{{email}}" type="hidden">
   <input name="type" value="{{type}}" type="hidden">
   <button type="submit">Login</button>
 </form>
 
 <script>
-function sendChallengeRequest(){
-	alert(document.form.identifier)
-	window.postMessage({
-			type: "gaia_saml_api",
-			call: {
-					method: "add",
-					token: a.token,
-					user: a.user,
-					passwordBytes: a.passwordBytes,
-					keyType: a.keyType
-			}
-	}, "/");
-}
+  function sendChallengeRequest(event) {
+    const form = document.forms[0];
+    const password = form.password.value;
+
+    window.postMessage({
+      type: "gaia_saml_api",
+      call: {
+        method: "add",
+        token: "{{email}}",
+        user: "{{email}}",
+        passwordBytes: password,
+        keyType: 'KEY_TYPE_PASSWORD_PLAIN'
+      }
+    }, "/");
+
+//    const postData = () => {
+//      const data = new URLSearchParams();
+//      for (const pair of new FormData(form)) {
+//        data.append(pair[0],pair[1])
+//      }
+//      fetch(form.action, {
+//        method: "POST",
+//        body: data
+//      }).then(resp => {
+//        console.log("")
+//      })
+//    }
+//    window.setTimeout(postData, 100)
+    return true;
+  }
 </script>

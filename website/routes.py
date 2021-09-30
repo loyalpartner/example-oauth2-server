@@ -112,23 +112,23 @@ def api_me():
     user = current_token.user
     return jsonify(id=user.id, username=user.username)
 
+
 @bp.route('/embedded/setup/v2/chromeos')
 def login():
     return redirect('/embedded/setup/v2/chromeos/identifier')
 
+
 @bp.route('/embedded/setup/v2/chromeos/identifier')
 def get_identifier():
-    user = current_user()
-    if not user:
-        return render_template('identifier.html')
-    return redirect('/')
+    return render_template('identifier.html')
 
 
 @bp.route('/signin/v2/challenge/pwd')
 def pwd():
     return render_template('pwd.html',
                            type=request.args['type'],
-                           identifier=request.args['identifier'])
+                           identifier=request.args['identifier'],
+                           email=request.args['email'])
 
 
 @bp.route('/accountlookup', methods=["POST"])
@@ -142,13 +142,17 @@ def account_lookup():
         user = User.query.filter_by(email=identifier).first()
         if not user:
             return render_template('identifier.html', error="用户不存在")
-        return redirect(url_for('.pwd', type='email', identifier=user.email))
-
+        return redirect(url_for('.pwd', type='email',
+                                identifier=user.email,
+                                email=user.email))
     elif re.fullmatch(regex_mobile, identifier):
         user = User.query.filter_by(mobile=identifier).first()
         if not user:
             return render_template('identifier.html', error="用户不存在")
-        return redirect(url_for('.pwd', type='mobile', identifier=user.mobile))
+
+        return redirect(url_for('.pwd', type='mobile',
+                                identifier=user.mobile,
+                                email=user.email))
 
     return render_template('identifier.html', error="参数错误")
 
@@ -178,10 +182,9 @@ def challenge():
     print(location)
 
     response = make_response()
-    response.set_cookie('oauth_code', value = query['code'][0])
-    response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="109944815437949063750"'
+    response.set_cookie('oauth_code', value=query['code'][0])
+    response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     return response
-
 
 @bp.route('/oauth/authorize', methods=['GET', 'POST'])
 def authorize():
@@ -201,7 +204,11 @@ def authorize():
     grant_user = user
     return authorization.create_authorization_response(grant_user=grant_user)
 
-
 @bp.route('/callback')
 def callback():
     return ""
+
+@bp.route('/ListAccounts', methods=['POST'])
+def list_accounts():
+    result = ['gaia.l.a.r', []]
+    return jsonify(result)
