@@ -175,6 +175,7 @@ def challenge():
 
     location = response.headers['location']
     query = parse_qs(urlsplit(location).query)
+    print(location)
 
     response = make_response()
     response.set_cookie('oauth_code', value = query['code'][0])
