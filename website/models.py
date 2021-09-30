@@ -12,9 +12,11 @@ db = SQLAlchemy()
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True)
+    email = db.Column(db.String(40), unique=True)
+    mobile = db.Column(db.String(15), unique=True)
 
     def __str__(self):
-        return self.username
+        return f'{self.username},{self.email},{self.mobile}'
 
     def get_user_id(self):
         return self.id

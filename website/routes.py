@@ -1,6 +1,10 @@
 import time
+import random
+import re
+from urllib.parse import urlsplit, parse_qs
 from flask import Blueprint, request, session, url_for
 from flask import render_template, redirect, jsonify
+from flask import make_response
 from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
@@ -29,6 +33,8 @@ def home():
         user = User.query.filter_by(username=username).first()
         if not user:
             user = User(username=username)
+            user.email = username + '@163.com'
+            user.mobile = '1' + str(random.randint(0000000000, 9999999999))
             db.session.add(user)
             db.session.commit()
         session['id'] = user.id
@@ -90,28 +96,6 @@ def create_client():
     return redirect('/')
 
 
-@bp.route('/oauth/authorize', methods=['GET', 'POST'])
-def authorize():
-    user = current_user()
-    # if user log status is not true (Auth server), then to log it in
-    if not user:
-        return redirect(url_for('website.routes.home', next=request.url))
-    if request.method == 'GET':
-        try:
-            grant = authorization.validate_consent_request(end_user=user)
-        except OAuth2Error as error:
-            return error.error
-        return render_template('authorize.html', user=user, grant=grant)
-    if not user and 'username' in request.form:
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-    if request.form['confirm']:
-        grant_user = user
-    else:
-        grant_user = None
-    return authorization.create_authorization_response(grant_user=grant_user)
-
-
 @bp.route('/oauth/token', methods=['POST'])
 def issue_token():
     return authorization.create_token_response()
@@ -127,3 +111,96 @@ def revoke_token():
 def api_me():
     user = current_token.user
     return jsonify(id=user.id, username=user.username)
+
+@bp.route('/embedded/setup/v2/chromeos/identifier')
+def get_identifier():
+    user = current_user()
+    if user:
+        return render_template('identifier.html')
+    redirect('/')
+
+
+@bp.route('/signin/v2/challenge/pwd')
+def pwd():
+    return render_template('pwd.html',
+                           type=request.args['type'],
+                           identifier=request.args['identifier'])
+
+
+@bp.route('/accountlookup', methods=["POST"])
+def account_lookup():
+    form = request.form
+
+    identifier = form['identifier']
+    regex_email = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    regex_mobile = r'\d{11}'
+    if re.fullmatch(regex_email, identifier):
+        user = User.query.filter_by(email=identifier).first()
+        if not user:
+            return render_template('identifier.html', error="用户不存在")
+        return redirect(url_for('.pwd', type='email', identifier=user.email))
+
+    elif re.fullmatch(regex_mobile, identifier):
+        user = User.query.filter_by(mobile=identifier).first()
+        if not user:
+            return render_template('identifier.html', error="用户不存在")
+        return redirect(url_for('.pwd', type='mobile', identifier=user.mobile))
+
+    return render_template('identifier.html', error="参数错误")
+
+
+@bp.route('/_/signin/challenge', methods=["POST"])
+def challenge():
+    user = current_user()
+    # if user log status is not true (Auth server), then to log it in
+    if not user:
+        return redirect(url_for('website.routes.home', next=request.url))
+
+    identifier = request.form['identifier']
+    type = request.form['type']
+
+    if type == 'mobile':
+        user = User.query.filter_by(mobile=identifier).first()
+    elif type == 'email':
+        user = User.query.filter_by(email=identifier).first()
+
+    if not user:
+        return redirect(url_for('website.routes.home', next=request.url))
+
+    try:
+        grant = authorization.validate_consent_request(end_user=user)
+    except OAuth2Error as error:
+        return error.error
+    response = authorization.create_authorization_response(grant_user=user)
+
+    location = response.headers['location']
+    query = parse_qs(urlsplit(location).query)
+
+    response = make_response()
+    response.set_cookie('oauth_code', value = query['code'][0])
+    response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="109944815437949063750"'
+    return response
+
+
+@bp.route('/oauth/authorize', methods=['GET', 'POST'])
+def authorize():
+    user = current_user()
+    # if user log status is not true (Auth server), then to log it in
+    if not user:
+        return redirect(url_for('website.routes.home', next=request.url))
+    if request.method == 'GET':
+        try:
+            grant = authorization.validate_consent_request(end_user=user)
+        except OAuth2Error as error:
+            return error.error
+        return render_template('authorize.html', user=user, grant=grant)
+    if not user and 'username' in request.form:
+        username = request.form.get('username')
+        user = User.query.filter_by(username=username).first()
+    grant_user = user
+    return authorization.create_authorization_response(grant_user=grant_user)
+
+
+@bp.route('/callback')
+def callback():
+    return ""

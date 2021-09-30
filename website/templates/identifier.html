@@ -1,0 +1,8 @@
+<form action="/accountlookup" method="post">
+  <input type="text" name="identifier" placeholder="email or phone">
+  <button type="submit">submit</button>
+</form>
+
+{% if error %}
+  <strong>{{ error }}: </strong>
+{% endif %}
