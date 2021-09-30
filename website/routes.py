@@ -112,12 +112,16 @@ def api_me():
     user = current_token.user
     return jsonify(id=user.id, username=user.username)
 
+@bp.route('/embedded/setup/v2/chromeos')
+def login():
+    return redirect('/embedded/setup/v2/chromeos/identifier')
+
 @bp.route('/embedded/setup/v2/chromeos/identifier')
 def get_identifier():
     user = current_user()
-    if user:
+    if not user:
         return render_template('identifier.html')
-    redirect('/')
+    return redirect('/')
 
 
 @bp.route('/signin/v2/challenge/pwd')
@@ -151,11 +155,7 @@ def account_lookup():
 
 @bp.route('/_/signin/challenge', methods=["POST"])
 def challenge():
-    user = current_user()
-    # if user log status is not true (Auth server), then to log it in
-    if not user:
-        return redirect(url_for('website.routes.home', next=request.url))
-
+    user = None
     identifier = request.form['identifier']
     type = request.form['type']
 
