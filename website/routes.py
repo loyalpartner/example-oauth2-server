@@ -174,14 +174,14 @@ def challenge():
     try:
         grant = authorization.validate_consent_request(end_user=user)
     except OAuth2Error as error:
+        print(user)
         return error.error
     response = authorization.create_authorization_response(grant_user=user)
 
     location = response.headers['location']
     query = parse_qs(urlsplit(location).query)
-    print(location)
 
-    response = make_response()
+    response = make_response(query['code'][0])
     response.set_cookie('oauth_code', value=query['code'][0])
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     return response
