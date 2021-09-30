@@ -27,7 +27,8 @@ http://127.0.0.1:5000/callback</textarea>
     <span>Allowed Grant Types</span>
     <textarea name="grant_type" cols="30" rows="10">
 authorization_code
-password</textarea>
+password
+refresh_token</textarea>
   </label>
   <label>
     <span>Allowed Response Types</span>
@@ -36,8 +37,8 @@ password</textarea>
   <label>
     <span>Token Endpoint Auth Method</span>
     <select name="token_endpoint_auth_method">
-      <option value="client_secret_basic">client_secret_basic</option>
       <option value="client_secret_post">client_secret_post</option>
+      <option value="client_secret_basic">client_secret_basic</option>
       <option value="none">none</option>
     </select>
   </label>
