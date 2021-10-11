@@ -95,6 +95,40 @@ def create_client():
     db.session.commit()
     return redirect('/')
 
+@bp.route('/edit_client/<client_id>', methods=('GET', 'POST'))
+def edit_client(client_id):
+    user = current_user()
+    client = OAuth2Client.query.filter_by(client_id = client_id).first()
+    if not user or not client:
+        return redirect('/')
+    if request.method == 'GET':
+        print(client)
+        return render_template('edit_client.html', client=client)
+
+    form = request.form
+    client_id = form["client_id"]
+    #client_id_issued_at = int(time.time())
+    client.client_id = client_id
+
+    client_metadata = {
+        "client_name": form["client_name"],
+        "client_uri": form["client_uri"],
+        "grant_types": split_by_crlf(form["grant_type"]),
+        "redirect_uris": split_by_crlf(form["redirect_uri"]),
+        "response_types": split_by_crlf(form["response_type"]),
+        "scope": form["scope"],
+        "token_endpoint_auth_method": form["token_endpoint_auth_method"]
+    }
+    client.set_client_metadata(client_metadata)
+
+    if form['token_endpoint_auth_method'] == 'none':
+        client.client_secret = ''
+    else:
+        client.client_secret = form['client_secret']
+
+    db.session.commit()
+    return redirect('/')
+
 
 @bp.route('/oauth/token', methods=['POST'])
 def issue_token():
@@ -125,10 +159,13 @@ def get_identifier():
 
 @bp.route('/signin/v2/challenge/pwd')
 def pwd():
+    user = current_user()
+    clients = OAuth2Client.query.all()
     return render_template('pwd.html',
                            type=request.args['type'],
                            identifier=request.args['identifier'],
-                           email=request.args['email'])
+                           email=request.args['email'],
+                           clients = clients)
 
 
 @bp.route('/accountlookup', methods=["POST"])
@@ -174,14 +211,13 @@ def challenge():
     try:
         grant = authorization.validate_consent_request(end_user=user)
     except OAuth2Error as error:
-        print(user)
         return error.error
     response = authorization.create_authorization_response(grant_user=user)
 
     location = response.headers['location']
     query = parse_qs(urlsplit(location).query)
 
-    response = make_response(query['code'][0])
+    response = jsonify(query['code'][0])
     response.set_cookie('oauth_code', value=query['code'][0])
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     return response
@@ -207,6 +243,17 @@ def authorize():
 @bp.route('/callback')
 def callback():
     return ""
+
+@bp.route('/oauth2/v2/tokeninfo', methods=['POST'])
+def token_info():
+    result = {
+        issued_to: "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+        audience: "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+        scope: "https://www.google.com/accounts/OAuthLogin",
+        expires_in: 3594,
+        access_type: "offline"
+    }
+    return jsonify(result)
 
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():

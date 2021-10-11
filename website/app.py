@@ -4,6 +4,12 @@ from .models import db
 from .oauth2 import config_oauth
 from .routes import bp
 
+import logging
+import sys
+log = logging.getLogger('authlib')
+log.addHandler(logging.StreamHandler(sys.stdout))
+log.setLevel(logging.DEBUG)
+
 
 def create_app(config=None):
     app = Flask(__name__)

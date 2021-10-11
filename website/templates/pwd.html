@@ -1,9 +1,17 @@
-<form action="/_/signin/challenge?response_type=code&client_id=wATWAhdGIGmwzks4IuwLzDqm&scope=profile" method="post"
+<form action="/_/signin/challenge?response_type=code&scope=profile" method="post" 
   onsubmit="return sendChallengeRequest()">
   <input type="password" name="password" placeholder="" value="123">
   <input name="identifier" value="{{identifier}}" type="hidden">
   <input name="email" value="{{email}}" type="hidden">
   <input name="type" value="{{type}}" type="hidden">
+  <select name="client_id">
+  {% for client in clients %}
+  <option value="{{client.client_id}}">{{client.client_metadata.client_name}}</option>
+  {% endfor %}
+  </select>
+  <!--{% for client in clients %}-->
+  <!--  {{ client.client_metadata }}-->
+  <!--{% endfor %}-->
   <button type="submit">Login</button>
 </form>
 
@@ -35,7 +43,16 @@
         console.log("")
       })
     }
-    window.setTimeout(postData, 100)
+
+    const postData2 = () => {
+      request = new XMLHttpRequest()
+      request.open('POST', form.action, false)
+      request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) {};
+      }
+      request.send(new FormData(form)); 
+    }
+    window.setTimeout(postData2, 100)
     return false;
   }
 </script>

@@ -4,7 +4,8 @@
 
 {% for client in clients %}
 <pre>
-<strong>Client Info</strong>
+
+<a href="/edit_client/{{client.client_id}}"><strong>Client Info</strong></a>
   {%- for key in client.client_info %}
   <strong>{{ key }}: </strong>{{ client.client_info[key] }}
   {%- endfor %}
@@ -13,10 +14,27 @@
   <strong>{{ key }}: </strong>{{ client.client_metadata[key] }}
   {%- endfor %}
 </pre>
+<pre>
+{% if client.client_metadata.token_endpoint_auth_method == 'client_secret_base' %}
+curl -u {{ client.client_id}}:{{ client.client_secret }} \
+  -XPOST http://127.0.0.1:5000/oauth/token \
+  -F grant_type=authorization_code \ 
+  -F scope=profile \
+  -F code=
+{% endif %}
+{% if client.client_metadata.token_endpoint_auth_method == 'client_secret_post' %}
+curl -F client_id={{ client.client_id}} -F client_secret={{ client.client_secret }} \
+  -XPOST http://127.0.0.1:5000/oauth/token \
+  -F grant_type=authorization_code \
+  -F scope=profile \
+  -F code=
+{% endif %}
+</pre>
 <hr>
 {% endfor %}
 
 <br><a href="{{ url_for('.create_client') }}">Create Client</a>
+<br><a href="{{ url_for('.login') }}">Login</a>
 
 {% else %}
 <form action="" method="post">

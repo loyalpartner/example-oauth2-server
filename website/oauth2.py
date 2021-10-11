@@ -59,8 +59,14 @@ class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
 
 
 class RefreshTokenGrant(grants.RefreshTokenGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic', 'client_secret_post', 'none'
+    ]
+    INCLUDE_NEW_REFRESH_TOKEN = True
+
     def authenticate_refresh_token(self, refresh_token):
-        token = OAuth2Token.query.filter_by(refresh_token=refresh_token).first()
+        token = OAuth2Token.query.filter_by(
+            refresh_token=refresh_token).first()
         if token and token.is_refresh_token_active():
             return token
 
@@ -88,7 +94,8 @@ def config_oauth(app):
     # support all grants
     authorization.register_grant(grants.ImplicitGrant)
     authorization.register_grant(grants.ClientCredentialsGrant)
-    authorization.register_grant(AuthorizationCodeGrant, [CodeChallenge(required=True)])
+    authorization.register_grant(AuthorizationCodeGrant, [
+                                 CodeChallenge(required=True)])
     authorization.register_grant(PasswordGrant)
     authorization.register_grant(RefreshTokenGrant)
 
