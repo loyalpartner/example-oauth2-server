@@ -244,16 +244,29 @@ def authorize():
 def callback():
     return ""
 
-@bp.route('/oauth2/v2/tokeninfo', methods=['POST'])
+@bp.route('/oauth2/v2/tokeninfo', methods=['POST', 'GET'])
 def token_info():
     result = {
-        issued_to: "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
-        audience: "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
-        scope: "https://www.google.com/accounts/OAuthLogin",
-        expires_in: 3594,
-        access_type: "offline"
+        "issued_to": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+        "audience": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+        "scope": "https://www.google.com/accounts/OAuthLogin",
+        "expires_in": 3594,
+        "access_type": "offline"
     }
     return jsonify(result)
+
+@bp.route('/oauth2/v1/userinfo', methods=['POST'])
+def userinfo():
+    return jsonify({
+        "id": "112978327937825080111",
+        "email": "charlselee45@gmail.com",
+        "verified_email": true,
+        "name": "李凯",
+        "given_name": "凯",
+        "family_name": "李",
+        "picture": "https://lh3.googleusercontent.com/a/AATXAJzxDB-97N_IrXuADKjI165V6JNNmFKKdxmz-k-g=s96-c",
+        "locale": "zh-CN"
+        })
 
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():

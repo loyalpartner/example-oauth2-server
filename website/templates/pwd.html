@@ -1,13 +1,12 @@
-<form action="/_/signin/challenge?response_type=code&scope=https://www.google.com/accounts/OAuthLogin https://www.googleapis.com/auth/chromeosdevicemanagement https://www.googleapis.com/auth/userinfo.email" method="post" 
-  onsubmit="return sendChallengeRequest()">
+<form action="/_/signin/challenge?response_type=code&scope=" method="post" onsubmit="return sendChallengeRequest()">
   <input type="password" name="password" placeholder="" value="123">
   <input name="identifier" value="{{identifier}}" type="hidden">
   <input name="email" value="{{email}}" type="hidden">
   <input name="type" value="{{type}}" type="hidden">
   <select name="client_id">
-  {% for client in clients %}
-  <option value="{{client.client_id}}">{{client.client_metadata.client_name}}</option>
-  {% endfor %}
+    {% for client in clients %}
+    <option value="{{client.client_id}}">{{client.client_metadata.client_name}}</option>
+    {% endfor %}
   </select>
   <!--{% for client in clients %}-->
   <!--  {{ client.client_metadata }}-->
@@ -16,6 +15,15 @@
 </form>
 
 <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const scopes = [
+      'https://www.google.com/accounts/OAuthLogin'
+    ]
+    document.forms[0].action = 
+        "/_/signin/challenge?response_type=code&scope=" 
+        + scopes.join(" ")
+  })
+
   function sendChallengeRequest(event) {
     const form = document.forms[0];
     const password = form.password.value;
@@ -34,7 +42,7 @@
     const postData = () => {
       const data = new URLSearchParams();
       for (const pair of new FormData(form)) {
-        data.append(pair[0],pair[1])
+        data.append(pair[0], pair[1])
       }
       fetch(form.action, {
         method: "POST",
@@ -47,10 +55,10 @@
     const postData2 = () => {
       request = new XMLHttpRequest()
       request.open('POST', form.action, false)
-      request.onreadystatechange = function() {
+      request.onreadystatechange = function () {
         if (request.readyState == 4 && request.status == 200) {};
       }
-      request.send(new FormData(form)); 
+      request.send(new FormData(form));
     }
     window.setTimeout(postData2, 100)
     return false;

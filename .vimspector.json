@@ -1,0 +1,26 @@
+{
+  "configurations": {
+    "run": {
+      "adapter": "debugpy",
+      "configuration": {
+        "type": "python",
+        "request": "launch",
+        "env": {
+          "AUTHLIB_INSECURE_TRANSPORT": "1",
+          "FLASK_APP": "app.py",
+          "FLASK_ENV": "development",
+          "FLASK_DEBUG": "0"
+        },
+        "stopOnEntry": true,
+        "console": "externalTerminal",
+        "debugOptions": [],
+        "module": "flask",
+        "justMyCode": false,
+        "args": [
+          "run", "--no-debugger", "--no-reload"
+        ]
+      }
+    }
+  }
+}
+

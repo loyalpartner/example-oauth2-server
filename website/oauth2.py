@@ -8,7 +8,7 @@ from authlib.integrations.sqla_oauth2 import (
     create_revocation_endpoint,
     create_bearer_token_validator,
 )
-from authlib.oauth2.rfc6749 import grants
+from authlib.oauth2.rfc6749 import grants, util
 from authlib.oauth2.rfc7636 import CodeChallenge
 from .models import db, User
 from .models import OAuth2Client, OAuth2AuthorizationCode, OAuth2Token
@@ -62,7 +62,37 @@ class RefreshTokenGrant(grants.RefreshTokenGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = [
         'client_secret_basic', 'client_secret_post', 'none'
     ]
-    INCLUDE_NEW_REFRESH_TOKEN = True
+    #INCLUDE_NEW_REFRESH_TOKEN = True
+
+    def _validate_token_scope(self, token):
+        scope = self.request.scope
+        if not scope:
+            return
+
+
+        original_scope = token.get_scope()
+        if not original_scope:
+            raise InvalidScopeError()
+
+        original_scope = set(util.scope_to_list(original_scope))
+        if original_scope.issuperset(set(util.scope_to_list("https://www.google.com/accounts/OAuthLogin"))):
+            return
+
+        if not original_scope.issuperset(set(util.scope_to_list(scope))):
+            raise InvalidScopeError()
+
+    def issue_token(self, client, user, credential):
+        expires_in = credential.get_expires_in()
+
+        scope = credential.get_scope()
+        token = self.generate_token(
+            client, self.GRANT_TYPE,
+            user=user,
+            expires_in=expires_in,
+            scope=scope,
+            include_refresh_token=self.INCLUDE_NEW_REFRESH_TOKEN,
+        )
+        return token
 
     def authenticate_refresh_token(self, refresh_token):
         token = OAuth2Token.query.filter_by(
@@ -74,7 +104,11 @@ class RefreshTokenGrant(grants.RefreshTokenGrant):
         return User.query.get(credential.user_id)
 
     def revoke_old_credential(self, credential):
-        credential.revoked = True
+        # NOTE : 
+        # google api 的 refresh_token 可以多次使用，
+        # 设计 oauth 的时候要注意这一点，为了节省时间，
+        # 我暂时让 refresh_token 保持不过期
+        #credential.revoked = True
         db.session.add(credential)
         db.session.commit()
 
