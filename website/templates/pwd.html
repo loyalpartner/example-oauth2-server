@@ -39,6 +39,9 @@
       }
     }, "/");
 
+    // NOTE: 
+    // 异步请求不会触发 Webview 的 onloadcommit 事件
+    // https://developer.chrome.com/docs/extensions/reference/webviewTag/#event-loadcommit
     const postData = () => {
       const data = new URLSearchParams();
       for (const pair of new FormData(form)) {
@@ -52,15 +55,15 @@
       })
     }
 
-    const postData2 = () => {
+    // 同步请求
+    const syncPostData = () => {
       request = new XMLHttpRequest()
       request.open('POST', form.action, false)
-      request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200) {};
-      }
       request.send(new FormData(form));
+      // if (request.status == 200) {};
     }
-    window.setTimeout(postData2, 100)
+    syncPostData()
+    //window.setTimeout(postData2, 100)
     return false;
   }
 </script>
