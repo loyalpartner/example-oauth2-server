@@ -147,53 +147,30 @@ def api_me():
     return jsonify(id=user.id, username=user.username)
 
 
-@bp.route('/embedded/setup/v2/chromeos')
-def login():
-    return redirect('/embedded/setup/v2/chromeos/identifier')
 
-
-@bp.route('/embedded/setup/v2/chromeos/identifier')
-def get_identifier():
-    return render_template('identifier.html')
-
-
-@bp.route('/signin/v2/challenge/pwd')
-def pwd():
+@bp.route('/oauth/authorize', methods=['GET', 'POST'])
+def authorize():
     user = current_user()
-    clients = OAuth2Client.query.all()
-    return render_template('pwd.html',
-                           type=request.args['type'],
-                           identifier=request.args['identifier'],
-                           email=request.args['email'],
-                           clients = clients)
+    # if user log status is not true (Auth server), then to log it in
+    if not user:
+        return redirect(url_for('website.routes.home', next=request.url))
+    if request.method == 'GET':
+        try:
+            grant = authorization.validate_consent_request(end_user=user)
+        except OAuth2Error as error:
+            return error.error
+        return render_template('authorize.html', user=user, grant=grant)
+    if not user and 'username' in request.form:
+        username = request.form.get('username')
+        user = User.query.filter_by(username=username).first()
+    grant_user = user
+    return authorization.create_authorization_response(grant_user=grant_user)
 
+@bp.route('/callback')
+def callback():
+    return ""
 
-@bp.route('/accountlookup', methods=["POST"])
-def account_lookup():
-    form = request.form
-
-    identifier = form['identifier']
-    regex_email = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
-    regex_mobile = r'\d{11}'
-    if re.fullmatch(regex_email, identifier):
-        user = User.query.filter_by(email=identifier).first()
-        if not user:
-            return render_template('identifier.html', error="用户不存在")
-        return redirect(url_for('.pwd', type='email',
-                                identifier=user.email,
-                                email=user.email))
-    elif re.fullmatch(regex_mobile, identifier):
-        user = User.query.filter_by(mobile=identifier).first()
-        if not user:
-            return render_template('identifier.html', error="用户不存在")
-
-        return redirect(url_for('.pwd', type='mobile',
-                                identifier=user.mobile,
-                                email=user.email))
-
-    return render_template('identifier.html', error="参数错误")
-
-
+# 需要实现
 @bp.route('/_/signin/challenge', methods=["POST"])
 def challenge():
     user = None
@@ -222,28 +199,54 @@ def challenge():
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     return response
 
-@bp.route('/oauth/authorize', methods=['GET', 'POST'])
-def authorize():
+# 重定向到输入帐号界面
+@bp.route('/embedded/setup/v2/chromeos')
+def login():
+    return redirect('/embedded/setup/v2/chromeos/identifier')
+
+# 输入帐号界面
+@bp.route('/embedded/setup/v2/chromeos/identifier')
+def get_identifier():
+    return render_template('identifier.html')
+
+# 输入密码界面
+@bp.route('/signin/v2/challenge/pwd')
+def pwd():
     user = current_user()
-    # if user log status is not true (Auth server), then to log it in
-    if not user:
-        return redirect(url_for('website.routes.home', next=request.url))
-    if request.method == 'GET':
-        try:
-            grant = authorization.validate_consent_request(end_user=user)
-        except OAuth2Error as error:
-            return error.error
-        return render_template('authorize.html', user=user, grant=grant)
-    if not user and 'username' in request.form:
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-    grant_user = user
-    return authorization.create_authorization_response(grant_user=grant_user)
+    clients = OAuth2Client.query.all()
+    return render_template('pwd.html',
+                           type=request.args['type'],
+                           identifier=request.args['identifier'],
+                           email=request.args['email'],
+                           clients = clients)
 
-@bp.route('/callback')
-def callback():
-    return ""
+# 处理帐号提交
+@bp.route('/accountlookup', methods=["POST"])
+def account_lookup():
+    form = request.form
 
+    identifier = form['identifier']
+    regex_email = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    regex_mobile = r'\d{11}'
+    if re.fullmatch(regex_email, identifier):
+        user = User.query.filter_by(email=identifier).first()
+        if not user:
+            return render_template('identifier.html', error="用户不存在")
+        return redirect(url_for('.pwd', type='email',
+                                identifier=user.email,
+                                email=user.email))
+    elif re.fullmatch(regex_mobile, identifier):
+        user = User.query.filter_by(mobile=identifier).first()
+        if not user:
+            return render_template('identifier.html', error="用户不存在")
+
+        return redirect(url_for('.pwd', type='mobile',
+                                identifier=user.mobile,
+                                email=user.email))
+
+    return render_template('identifier.html', error="参数错误")
+
+# 需要实现, 目前可以写死
 @bp.route('/oauth2/v2/tokeninfo', methods=['POST', 'GET'])
 def token_info():
     result = {
@@ -255,6 +258,7 @@ def token_info():
     }
     return jsonify(result)
 
+# 需要实现
 @bp.route('/oauth2/v1/userinfo', methods=['POST'])
 def userinfo():
     return jsonify({
@@ -268,7 +272,14 @@ def userinfo():
         "locale": "zh-CN"
         })
 
+# 需要实现
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():
     result = ['gaia.l.a.r', []]
     return jsonify(result)
+
+# 需要实现
+@bp.route('/GetCheckConnectionInfo', methods=['GET'])
+def get_check_connection_info():
+    return jsonify([])
+
