@@ -259,12 +259,12 @@ def token_info():
     return jsonify(result)
 
 # 需要实现
-@bp.route('/oauth2/v1/userinfo', methods=['POST'])
+@bp.route('/oauth2/v1/userinfo', methods=['POST', 'GET'])
 def userinfo():
     return jsonify({
-        "id": "112978327937825080111",
-        "email": "charlselee45@gmail.com",
-        "verified_email": true,
+        "id": "1",
+        "email": "likai@gmail.com",
+        "verified_email": True,
         "name": "李凯",
         "given_name": "凯",
         "family_name": "李",
@@ -275,11 +275,32 @@ def userinfo():
 # 需要实现
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():
-    result = ['gaia.l.a.r', []]
+    result = ["gaia.l.a.r",
+              [
+                  [
+                      "gaia.l.a",
+                      1,
+                      "李凯",
+                      "likai@163.com", 
+                      "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
+                      1,
+                      1,
+                      0,
+                      None,
+                      1,
+                      "1",
+                      None,
+                      None,
+                      None,
+                      None,
+                      1
+                  ]
+              ]]
     return jsonify(result)
 
 # 需要实现
 @bp.route('/GetCheckConnectionInfo', methods=['GET'])
 def get_check_connection_info():
-    return jsonify([])
+    #return jsonify([])
+    return ""
 
