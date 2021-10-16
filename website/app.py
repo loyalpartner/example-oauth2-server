@@ -6,9 +6,9 @@ from .routes import bp
 
 import logging
 import sys
-log = logging.getLogger('authlib')
-log.addHandler(logging.StreamHandler(sys.stdout))
-log.setLevel(logging.DEBUG)
+#log = logging.getLogger('authlib')
+#log.addHandler(logging.StreamHandler(sys.stdout))
+#log.setLevel(logging.DEBUG)
 
 
 def create_app(config=None):

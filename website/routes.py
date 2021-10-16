@@ -249,6 +249,7 @@ def account_lookup():
 # 需要实现, 目前可以写死
 @bp.route('/oauth2/v2/tokeninfo', methods=['POST', 'GET'])
 def token_info():
+    print(request.headers)
     result = {
         "issued_to": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
         "audience": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
@@ -275,27 +276,32 @@ def userinfo():
 # 需要实现
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():
-    result = ["gaia.l.a.r",
-              [
-                  [
-                      "gaia.l.a",
-                      1,
-                      "李凯",
-                      "likai@163.com", 
-                      "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
-                      1,
-                      1,
-                      0,
-                      None,
-                      1,
-                      "1",
-                      None,
-                      None,
-                      None,
-                      None,
-                      1
-                  ]
-              ]]
+    print(request.cookies)
+    print(request.headers)
+    if len(request.cookies) > 0:
+        result = ["gaia.l.a.r",
+                [
+                    [
+                        "gaia.l.a",
+                        1,
+                        "李凯",
+                        "likai@163.com", 
+                        "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
+                        1,
+                        1,
+                        0,
+                        None,
+                        1,
+                        "1",
+                        None,
+                        None,
+                        None,
+                        None,
+                        1
+                    ]
+                ]]
+    else:
+        result = ["gaia.l.a.r", []]
     return jsonify(result)
 
 # 需要实现
