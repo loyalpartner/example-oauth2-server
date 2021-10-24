@@ -95,10 +95,11 @@ def create_client():
     db.session.commit()
     return redirect('/')
 
+
 @bp.route('/edit_client/<client_id>', methods=('GET', 'POST'))
 def edit_client(client_id):
     user = current_user()
-    client = OAuth2Client.query.filter_by(client_id = client_id).first()
+    client = OAuth2Client.query.filter_by(client_id=client_id).first()
     if not user or not client:
         return redirect('/')
     if request.method == 'GET':
@@ -107,7 +108,7 @@ def edit_client(client_id):
 
     form = request.form
     client_id = form["client_id"]
-    #client_id_issued_at = int(time.time())
+    # client_id_issued_at = int(time.time())
     client.client_id = client_id
 
     client_metadata = {
@@ -147,7 +148,6 @@ def api_me():
     return jsonify(id=user.id, username=user.username)
 
 
-
 @bp.route('/oauth/authorize', methods=['GET', 'POST'])
 def authorize():
     user = current_user()
@@ -166,26 +166,22 @@ def authorize():
     grant_user = user
     return authorization.create_authorization_response(grant_user=grant_user)
 
+
 @bp.route('/callback')
 def callback():
     return ""
 
 # 需要实现
+
+
 @bp.route('/_/signin/challenge', methods=["POST"])
 def challenge():
     user = None
     identifier = request.form['identifier']
-    type = request.form['type']
 
-    if type == 'mobile':
-        user = User.query.filter_by(mobile=identifier).first()
-    elif type == 'email':
-        user = User.query.filter_by(email=identifier).first()
-
-    if not user:
-        return redirect(url_for('website.routes.home', next=request.url))
 
     try:
+        user = User.query.filter_by(email=identifier).first()
         grant = authorization.validate_consent_request(end_user=user)
     except OAuth2Error as error:
         return error.error
@@ -200,53 +196,48 @@ def challenge():
     return response
 
 # 重定向到输入帐号界面
+
+
 @bp.route('/embedded/setup/v2/chromeos')
 def login():
-    return redirect('/embedded/setup/v2/chromeos/identifier')
+    return redirect(f'/embedded/setup/v2/chromeos/identifier?{request.query_string}')
 
 # 输入帐号界面
+
+
 @bp.route('/embedded/setup/v2/chromeos/identifier')
 def get_identifier():
     return render_template('identifier.html')
 
 # 输入密码界面
-@bp.route('/signin/v2/challenge/pwd')
-def pwd():
-    user = current_user()
-    clients = OAuth2Client.query.all()
-    return render_template('pwd.html',
-                           type=request.args['type'],
-                           identifier=request.args['identifier'],
-                           email=request.args['email'],
-                           clients = clients)
+# @bp.route('/_/signin/challenge/pwd')
+# def pwd():
+#    user = current_user()
+#    clients = OAuth2Client.query.all()
+#    return render_template('pwd.html',
+#                           type=request.args['type'],
+#                           identifier=request.args['identifier'],
+#                           email=request.args['email'],
+#                           clients=clients)
 
 # 处理帐号提交
-@bp.route('/accountlookup', methods=["POST"])
-def account_lookup():
-    form = request.form
 
-    identifier = form['identifier']
+
+@bp.route('/_/lookup/accountlookup', methods=["POST", "GET"])
+def account_lookup():
+    print(request.form)
+    identifier = request.form['identifier']
     regex_email = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     regex_mobile = r'\d{11}'
+    user = User()
     if re.fullmatch(regex_email, identifier):
         user = User.query.filter_by(email=identifier).first()
-        if not user:
-            return render_template('identifier.html', error="用户不存在")
-        return redirect(url_for('.pwd', type='email',
-                                identifier=user.email,
-                                email=user.email))
     elif re.fullmatch(regex_mobile, identifier):
         user = User.query.filter_by(mobile=identifier).first()
-        if not user:
-            return render_template('identifier.html', error="用户不存在")
 
-        return redirect(url_for('.pwd', type='mobile',
-                                identifier=user.mobile,
-                                email=user.email))
+    return jsonify({'email': user.email, 'avatar': 'set avatar url'})
 
-    return render_template('identifier.html', error="参数错误")
 
-# 需要实现, 目前可以写死
 @bp.route('/oauth2/v2/tokeninfo', methods=['POST', 'GET'])
 def token_info():
     print(request.headers)
@@ -260,6 +251,8 @@ def token_info():
     return jsonify(result)
 
 # 需要实现
+
+
 @bp.route('/oauth2/v1/userinfo', methods=['POST', 'GET'])
 def userinfo():
     return jsonify({
@@ -271,42 +264,45 @@ def userinfo():
         "family_name": "李",
         "picture": "https://lh3.googleusercontent.com/a/AATXAJzxDB-97N_IrXuADKjI165V6JNNmFKKdxmz-k-g=s96-c",
         "locale": "zh-CN"
-        })
+    })
 
 # 需要实现
+
+
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():
     print(request.cookies)
     print(request.headers)
     if len(request.cookies) > 0:
         result = ["gaia.l.a.r",
-                [
-                    [
-                        "gaia.l.a",
-                        1,
-                        "李凯",
-                        "likai@163.com", 
-                        "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
-                        1,
-                        1,
-                        0,
-                        None,
-                        1,
-                        "1",
-                        None,
-                        None,
-                        None,
-                        None,
-                        1
-                    ]
-                ]]
+                  [
+                      [
+                          "gaia.l.a",
+                          1,
+                          "李凯",
+                          "likai@163.com",
+                          "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
+                          1,
+                          1,
+                          0,
+                          None,
+                          1,
+                          "1",
+                          None,
+                          None,
+                          None,
+                          None,
+                          1
+                      ]
+                  ]]
     else:
         result = ["gaia.l.a.r", []]
     return jsonify(result)
 
 # 需要实现
-@bp.route('/GetCheckConnectionInfo', methods=['GET'])
-def get_check_connection_info():
-    #return jsonify([])
-    return ""
 
+
+@bp.route('/GetCheckConnectionInfo', methods=['GET', 'POST'])
+def get_check_connection_info():
+    # return jsonify([])
+    return ""
