@@ -179,7 +179,6 @@ def challenge():
     user = None
     identifier = request.form['identifier']
 
-
     try:
         user = User.query.filter_by(email=identifier).first()
         grant = authorization.validate_consent_request(end_user=user)
@@ -191,6 +190,7 @@ def challenge():
     query = parse_qs(urlsplit(location).query)
 
     response = jsonify(query['code'][0])
+
     response.set_cookie('oauth_code', value=query['code'][0])
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     return response
@@ -200,25 +200,14 @@ def challenge():
 
 @bp.route('/embedded/setup/v2/chromeos')
 def login():
-    return redirect(f'/embedded/setup/v2/chromeos/identifier?{request.query_string}')
+    return redirect(f'/embedded/setup/v2/chromeos/identifier?{request.query_string.decode()}')
 
 # 输入帐号界面
 
 
 @bp.route('/embedded/setup/v2/chromeos/identifier')
 def get_identifier():
-    return render_template('identifier.html')
-
-# 输入密码界面
-# @bp.route('/_/signin/challenge/pwd')
-# def pwd():
-#    user = current_user()
-#    clients = OAuth2Client.query.all()
-#    return render_template('pwd.html',
-#                           type=request.args['type'],
-#                           identifier=request.args['identifier'],
-#                           email=request.args['email'],
-#                           clients=clients)
+    return render_template('identifier.html', clients=OAuth2Client.query.all())
 
 # 处理帐号提交
 

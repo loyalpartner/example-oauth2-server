@@ -1,23 +1,3 @@
-<!--<form action="/accountlookup" method="post">-->
-<!--  <input type="text" name="identifier" value="likai@163.com">-->
-<!--</form>-->
-<!---->
-<!--<button onclick="setPrimaryActionLabel()">submit</button>-->
-<!--{% if error %}-->
-<!--<strong>{{ error }}: </strong>-->
-<!--{% endif %}-->
-<!---->
-<!--<script>-->
-<!--  function setPrimaryActionLabel() {-->
-<!--    window.postMessage({-->
-<!--      type: "message",-->
-<!--        method: "setPrimaryActionLabel",-->
-<!--        value: "下一步"-->
-<!--    })-->
-<!--  }-->
-<!---->
-<!--</script>-->
-
 <script>
   var gaia = gaia || {};
   gaia.chromeOSLogin = {};
@@ -37,9 +17,9 @@
     console.error('On first page');
     document.getElementById('page1').hidden = false;
     document.getElementById('page2').hidden = true;
-    history.replaceState({}, '', window.location.pathname + '#identifier');
+    // history.replaceState({}, '', window.location.pathname + '#identifier');
     gaia.chromeOSLogin.backButton(false);
-    sendSetPrimaryActionLabel('Next');
+    sendSetPrimaryActionLabel('下一步');
     sendSetPrimaryActionEnabled(true);
   }
 
@@ -154,40 +134,26 @@
     } else if (!document.getElementById("page2").hidden) {
       var email = document.getElementById("identifier").value;
       var password = document.getElementById("password").value;
-      //    var services = document.getElementById("services").value;
-      //    if (services) {
-      //      services = JSON.parse(services);
-      //      if (!services)
-      //        services = "Failed to parse test services JSON.";
-      //    } else if (email.endsWith('@corp.example.com') ||
-      //               email.endsWith('@example.test')) {
-      //      // SAML tests.
-      //      services = [];
-      //    } else {
-      //      console.warn("Services are not set for testing.");
-      //      if (gaia.chromeOSLogin.shouldSendImplicitServices)
-      //        services = []
-      //    }
-      services = []
       request = new XMLHttpRequest();
-      request.open('POST', '/_/signin/challenge', true);
+      request.open('POST', '/_/signin/challenge?response_type=code&scope=https://www.google.com/accounts/OAuthLogin', true);
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
       request.onreadystatechange = function () {
+        console.log("status" + request.status)
+        console.log("state" + request.readyState)
         if (request.readyState == 4 && request.status == 200) {
-          // if (request.getResponseHeader("fake-sync-trusted-vault-keys")) {
-          //   sendSyncTrustedVaultKeys(JSON.parse(
-          //     request.getResponseHeader("fake-sync-trusted-vault-keys")));
-          // }
-          if (services)
-            gaia.chromeOSLogin.sendUserInfo(services);
-          if (gaia.chromeOSLogin.shouldSendCloseView)
-            gaia.chromeOSLogin.sendCloseView();
+          gaia.chromeOSLogin.sendUserInfo([]);
+          gaia.chromeOSLogin.sendCloseView();
           history.pushState({}, "", window.location.pathname + "#close");
         }
       };
-      request.send('identifier=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password));
+
+      var client_id = document.getElementById("client_id").value;
+      request.send('identifier=' + encodeURIComponent(email) +
+        '&password=' + encodeURIComponent(password) +
+        '&client_id=' + encodeURIComponent(client_id));
 
       gaia.chromeOSLogin.attemptLogin(email, password);
+      gaia.chromeOSLogin.sendSetPrimaryActionEnabled(true)
     }
   }
 
@@ -289,8 +255,13 @@
   </div>
   <div id="page2" hidden>
     Password
-    <input id="password" name="password" type="password" spellcheck="false" autocomplete="off" formnovalidate="">
-    <input id="services" name="services" type="text" spellcheck="false" autocomplete="off" formnovalidate="">
+    <select name="client_id" id="client_id">
+      {% for client in clients %}
+      <option value="{{client.client_id}}">{{client.client_metadata.client_name}}</option>
+      {% endfor %}
+    </select>
+    <input id="password" name="password" type="password" value="123" spellcheck="false" autocomplete="off"
+      formnovalidate="">
   </div><br>
   <div id='nextButton' onclick='goNext();'>Next</div>
 </body>
