@@ -7,6 +7,7 @@ cert:
 		mkcert -cert-file ./etc/127.0.0.1.pem \
 			-key-file ./etc/127.0.0.1-key.pem \
 			127.0.0.1 \
+			192.168.8.236 \
 			`hostname -i` \
 			'example.com' \
 			'*.example.com' \

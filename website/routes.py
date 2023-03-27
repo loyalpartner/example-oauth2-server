@@ -69,21 +69,21 @@ def create_client():
     client_id = gen_salt(24)
     client_id_issued_at = int(time.time())
     client = OAuth2Client(
-        client_id=client_id,
-        client_id_issued_at=client_id_issued_at,
-        user_id=user.id,
-    )
+            client_id=client_id,
+            client_id_issued_at=client_id_issued_at,
+            user_id=user.id,
+            )
 
     form = request.form
     client_metadata = {
-        "client_name": form["client_name"],
-        "client_uri": form["client_uri"],
-        "grant_types": split_by_crlf(form["grant_type"]),
-        "redirect_uris": split_by_crlf(form["redirect_uri"]),
-        "response_types": split_by_crlf(form["response_type"]),
-        "scope": form["scope"],
-        "token_endpoint_auth_method": form["token_endpoint_auth_method"]
-    }
+            "client_name": form["client_name"],
+            "client_uri": form["client_uri"],
+            "grant_types": split_by_crlf(form["grant_type"]),
+            "redirect_uris": split_by_crlf(form["redirect_uri"]),
+            "response_types": split_by_crlf(form["response_type"]),
+            "scope": form["scope"],
+            "token_endpoint_auth_method": form["token_endpoint_auth_method"]
+            }
     client.set_client_metadata(client_metadata)
 
     if form['token_endpoint_auth_method'] == 'none':
@@ -112,14 +112,14 @@ def edit_client(client_id):
     client.client_id = client_id
 
     client_metadata = {
-        "client_name": form["client_name"],
-        "client_uri": form["client_uri"],
-        "grant_types": split_by_crlf(form["grant_type"]),
-        "redirect_uris": split_by_crlf(form["redirect_uri"]),
-        "response_types": split_by_crlf(form["response_type"]),
-        "scope": form["scope"],
-        "token_endpoint_auth_method": form["token_endpoint_auth_method"]
-    }
+            "client_name": form["client_name"],
+            "client_uri": form["client_uri"],
+            "grant_types": split_by_crlf(form["grant_type"]),
+            "redirect_uris": split_by_crlf(form["redirect_uri"]),
+            "response_types": split_by_crlf(form["response_type"]),
+            "scope": form["scope"],
+            "token_endpoint_auth_method": form["token_endpoint_auth_method"]
+            }
     client.set_client_metadata(client_metadata)
 
     if form['token_endpoint_auth_method'] == 'none':
@@ -148,23 +148,22 @@ def Logout():
 #@bp.route('/oauth/multilogin', methods=['GET', 'POST'])
 def multilogin():
     print(request.headers)
-    return jsonify(
-            status= "OK",
-            accounts= [
-                {
-                    "type":"PERSON_ACCOUNT",
-                    "display_name": 'aaa',
-                    "display_email": 'likai1@example.com',
-                    "photo_url": '',
-                    "selected":False,
-                    "default_user":True,
-                    "authuser":0,
-                    "valid_session":True,
-                    "obfuscated_id": 3,
-                    "is_verified":True
-                    }
-                ],
-            )
+    return jsonify(status= "OK",
+                   accounts= [
+                       {
+                           "type":"PERSON_ACCOUNT",
+                           "display_name": 'aaa',
+                           "display_email": 'likai1@example.com',
+                           "photo_url": '',
+                           "selected":False,
+                           "default_user":True,
+                           "authuser":0,
+                           "valid_session":True,
+                           "obfuscated_id": 3,
+                           "is_verified":True
+                           }
+                       ],
+                   )
 
 @bp.route('/api/me')
 @require_oauth('profile')
@@ -216,23 +215,15 @@ def challenge():
 
     response = jsonify(query['code'][0])
 
-    # x-chrome-id-consistency-response
-    # action=SIGNIN,id=112978327937825080111,email=charlselee45@gmail.com,authuser=0,authorization_code=4/0AVHEtk4gI2cfYZlKJzS7u3aEI37kEyyGkHZge0br9iFMX6aRws1puXcCDIx_buMDZ9fEEg
     response.set_cookie('oauth_code', value=query['code'][0])
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
     response.headers['x-chrome-id-consistency-response'] = f'action=SIGNIN,id={user.id},email={user.email},authuser=0,authorization_code={query["code"][0]}'
 
     return response
 
-# 重定向到输入帐号界面
-
-
 @bp.route('/embedded/setup/v2/chromeos')
 def login():
     return redirect(f'/embedded/setup/v2/chromeos/identifier?{request.query_string.decode()}')
-
-# 输入帐号界面
-
 
 @bp.route('/embedded/setup/v2/chromeos/identifier')
 @bp.route('/signin/chrome/sync')
@@ -261,12 +252,12 @@ def account_lookup():
 def token_info():
     print(request.headers)
     result = {
-        "issued_to": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
-        "audience": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
-        "scope": "https://www.google.com/accounts/OAuthLogin",
-        "expires_in": 3594,
-        "access_type": "offline"
-    }
+            "issued_to": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+            "audience": "924641000710-rprso8onm0mlboicfn4sk86dp823jufm.apps.googleusercontent.com",
+            "scope": "https://www.google.com/accounts/OAuthLogin",
+            "expires_in": 3594,
+            "access_type": "offline"
+            }
     return jsonify(result)
 
 # 需要实现
@@ -283,7 +274,7 @@ def userinfo():
         "family_name": "李",
         "picture": "https://lh3.googleusercontent.com/a/AATXAJzxDB-97N_IrXuADKjI165V6JNNmFKKdxmz-k-g=s96-c",
         "locale": "zh-CN"
-    })
+        })
 
 # 需要实现
 
@@ -311,8 +302,8 @@ def list_accounts():
                           None,
                           None,
                           1
-                      ]
-                  ]]
+                          ]
+                      ]]
     else:
         result = ["gaia.l.a.r", []]
     return jsonify(result)
