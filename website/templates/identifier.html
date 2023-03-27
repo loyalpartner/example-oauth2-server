@@ -52,7 +52,7 @@
       'method': 'attemptLogin',
       'email': email,
     };
-    gaia.chromeOSLogin.parent_webview_.postMessage(msg,
+    gaia.chromeOSLogin.parent_webview_?.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
 
     if (!email || !password)
@@ -76,7 +76,7 @@
       'method': 'userInfo',
       'services': services,
     };
-    gaia.chromeOSLogin.parent_webview_.postMessage(msg,
+    gaia.chromeOSLogin.parent_webview_?.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
   };
 
@@ -84,7 +84,7 @@
     msg = {
       'method': 'closeView',
     };
-    gaia.chromeOSLogin.parent_webview_.postMessage(msg,
+    gaia.chromeOSLogin.parent_webview_?.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
   };
 
@@ -93,7 +93,7 @@
       'method': 'backButton',
       'show': show,
     };
-    gaia.chromeOSLogin.parent_webview_.postMessage(msg,
+    gaia.chromeOSLogin.parent_webview_?.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
   };
 
@@ -152,8 +152,8 @@
         '&password=' + encodeURIComponent(password) +
         '&client_id=' + encodeURIComponent(client_id));
 
-      gaia.chromeOSLogin.attemptLogin(email, password);
-      gaia.chromeOSLogin.sendSetPrimaryActionEnabled(true)
+      //gaia.chromeOSLogin.attemptLogin(email, password);
+      //gaia.chromeOSLogin.sendSetPrimaryActionEnabled(true)
     }
   }
 
@@ -165,7 +165,7 @@
   }
 
   function sendSetPrimaryActionLabel(label) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'setPrimaryActionLabel',
       value: label
     },
@@ -173,7 +173,7 @@
   }
 
   function sendSetPrimaryActionEnabled(enabled) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'setPrimaryActionEnabled',
       value: enabled
     },
@@ -181,7 +181,7 @@
   }
 
   function sendSetSecondaryActionLabel(label) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'setSecondaryActionLabel',
       value: label
     },
@@ -189,7 +189,7 @@
   }
 
   function sendSetSecondaryActionEnabled(enabled) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'setSecondaryActionEnabled',
       value: enabled
     },
@@ -197,7 +197,7 @@
   }
 
   function sendSetAllActionsEnabled(enabled) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'setAllActionsEnabled',
       value: enabled
     },
@@ -239,7 +239,7 @@
   }
 
   function sendSyncTrustedVaultKeys(fakeKeys) {
-    gaia.chromeOSLogin.parent_webview_.postMessage({
+    gaia.chromeOSLogin.parent_webview_?.postMessage({
       method: 'syncTrustedVaultKeys',
       value: convertSyncTrustedVaultKeys(fakeKeys)
     },
@@ -248,9 +248,9 @@
 </script>
 
 <body onload='onLoad();'>
-  <div id="page1" hidden>
+  <div id="page1">
     Email
-    <input id="identifier" name="identifier" value="likai@163.com" type="email" spellcheck="false" autocomplete="off"
+    <input id="identifier" name="identifier" value="likai1@example.com" type="email" spellcheck="false" autocomplete="off"
       formnovalidate="">
   </div>
   <div id="page2" hidden>

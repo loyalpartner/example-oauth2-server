@@ -33,7 +33,7 @@ def home():
         user = User.query.filter_by(username=username).first()
         if not user:
             user = User(username=username)
-            user.email = username + '@163.com'
+            user.email = username + '@example.com'
             user.mobile = '1' + str(random.randint(0000000000, 9999999999))
             db.session.add(user)
             db.session.commit()
@@ -132,6 +132,7 @@ def edit_client(client_id):
 
 
 @bp.route('/oauth/token', methods=['POST'])
+@bp.route('/oauth2/v4/token', methods=['POST'])
 def issue_token():
     return authorization.create_token_response()
 
@@ -140,6 +141,30 @@ def issue_token():
 def revoke_token():
     return authorization.create_endpoint_response('revocation')
 
+@bp.route('/Logout', methods=['GET', 'POST'])
+def Logout():
+    return ""
+
+#@bp.route('/oauth/multilogin', methods=['GET', 'POST'])
+def multilogin():
+    print(request.headers)
+    return jsonify(
+            status= "OK",
+            accounts= [
+                {
+                    "type":"PERSON_ACCOUNT",
+                    "display_name": 'aaa',
+                    "display_email": 'likai1@example.com',
+                    "photo_url": '',
+                    "selected":False,
+                    "default_user":True,
+                    "authuser":0,
+                    "valid_session":True,
+                    "obfuscated_id": 3,
+                    "is_verified":True
+                    }
+                ],
+            )
 
 @bp.route('/api/me')
 @require_oauth('profile')
@@ -191,8 +216,12 @@ def challenge():
 
     response = jsonify(query['code'][0])
 
+    # x-chrome-id-consistency-response
+    # action=SIGNIN,id=112978327937825080111,email=charlselee45@gmail.com,authuser=0,authorization_code=4/0AVHEtk4gI2cfYZlKJzS7u3aEI37kEyyGkHZge0br9iFMX6aRws1puXcCDIx_buMDZ9fEEg
     response.set_cookie('oauth_code', value=query['code'][0])
     response.headers['google-accounts-signin'] = f'email="{user.email}", sessionindex=0, obfuscatedid="{user.id}"'
+    response.headers['x-chrome-id-consistency-response'] = f'action=SIGNIN,id={user.id},email={user.email},authuser=0,authorization_code={query["code"][0]}'
+
     return response
 
 # 重定向到输入帐号界面
@@ -206,6 +235,7 @@ def login():
 
 
 @bp.route('/embedded/setup/v2/chromeos/identifier')
+@bp.route('/signin/chrome/sync')
 def get_identifier():
     return render_template('identifier.html', clients=OAuth2Client.query.all())
 
@@ -245,8 +275,8 @@ def token_info():
 @bp.route('/oauth2/v1/userinfo', methods=['POST', 'GET'])
 def userinfo():
     return jsonify({
-        "id": "1",
-        "email": "likai@gmail.com",
+        "id": "3",
+        "email": "likai1@example.com",
         "verified_email": True,
         "name": "李凯",
         "given_name": "凯",
@@ -260,23 +290,22 @@ def userinfo():
 
 @bp.route('/ListAccounts', methods=['POST'])
 def list_accounts():
-    print(request.cookies)
     print(request.headers)
-    if len(request.cookies) > 0:
+    if len(request.cookies) >= 0:
         result = ["gaia.l.a.r",
                   [
                       [
                           "gaia.l.a",
                           1,
                           "李凯",
-                          "likai@163.com",
+                          "likai1@example.com",
                           "https://lh3.googleusercontent.com/-trz8baMe1vA/AAAAAAAAAAI/AAAAAAAAAAA/j1_0SDVrzvw/s48-c/photo.jpg",
                           1,
                           1,
                           0,
                           None,
                           1,
-                          "1",
+                          "3",
                           None,
                           None,
                           None,
@@ -291,7 +320,7 @@ def list_accounts():
 # 需要实现
 
 
-@bp.route('/GetCheckConnectionInfo', methods=['GET', 'POST'])
+#@bp.route('/GetCheckConnectionInfo', methods=['GET', 'POST'])
 def get_check_connection_info():
     # return jsonify([])
     return ""

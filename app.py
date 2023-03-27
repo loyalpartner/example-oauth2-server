@@ -8,3 +8,8 @@ app = create_app({
     'SQLALCHEMY_DATABASE_URI': 'sqlite:///db.sqlite',
 })
 
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000, ssl_context=(
+        "./etc/127.0.0.1.pem",
+        "./etc/127.0.0.1-key.pem"
+    ))
